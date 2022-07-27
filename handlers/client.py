@@ -29,10 +29,10 @@ async def command_back(message : types.Message):
 
 #@dp.message_handler(commands=['My_TOP'])
 async def command_top(message : types.Message):
-        await sqlite_db.sql_read(message)  
-        await message.answer('Links:',reply_markup=inline.inkb)
+        #await sqlite_db.sql_read(message)  
+        await message.answer(sqlite_db.sql_readx(),reply_markup=inline.inkb)
 
-#@dp.callback_query_handler(func=lambda c: c.data and c.data.startswith('btn'))
+#@dp.callback_query_handler(func=lambda c: c.data and c.data.startswith('btn'))         
 async def process_callback_kbbtn(callback_query: types.CallbackQuery):
     code = callback_query.data[-1]
     if code.isdigit():
