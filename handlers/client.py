@@ -1,8 +1,8 @@
 import imp
 from aiogram import Dispatcher, types
-from create_bot import dp,bot
+from create_bot import dp, bot
 from keyboards import kb_client
-from aiogram.types import ReplyKeyboardRemove
+from aiogram.types import ReplyKeyboardRemove, InlineKeyboardButton, InlineKeyboardMarkup
 from data_base import sqlite_db
 from keyboards import inline
 
@@ -29,18 +29,29 @@ async def command_back(message : types.Message):
 
 #@dp.message_handler(commands=['My_TOP'])
 async def command_top(message : types.Message):
-        await sqlite_db.sql_read(message)  
-        await message.answer('Links:',reply_markup=inline.inkb)
+        #await sqlite_db.sql_read(message)  
+        data = await sqlite_db.sql_get()
+        inline_kb = InlineKeyboardMarkup(row_width=2)
+        for i, film_index in enumerate(data['indices']):
+            b = InlineKeyboardButton(text=f'{i + 1}',callback_data=f'btn{film_index}')
+            inline_kb.add(b)
+        await message.answer(data['message'], reply_markup=inline_kb)
 
 #@dp.callback_query_handler(func=lambda c: c.data and c.data.startswith('btn'))
 async def process_callback_kbbtn(callback_query: types.CallbackQuery):
-    code = callback_query.data[-1]
+    code = callback_query.data.strip('btn')
     if code.isdigit():
         code = int(code)
+        await sqlite_db.sql_show_variant(callback_query.from_user.id, code)
+    else:
+        # можно добавить листание страниц
+        pass
+    """
     if code == 1:
         #await sqlite_db.sql_show_variant(callback_query)
         await sqlite_db.sql_show_variant(callback_query.from_user.id)
         await bot.answer_callback_query(callback_query.id)
+    """
 
 def register_handlers_client(dp : Dispatcher):
     dp.register_message_handler(command_start,commands=['start','help'])
