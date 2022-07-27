@@ -16,8 +16,8 @@ async def sql_add_command(state):
         base.commit()
 
 async def sql_show_variant(id, film_id):
-    for x in cur.execute('SELECT (img, name, genre, description, date, rate) FROM film WHERE id == ?',(film_id,)).fetchall():
-        await bot.send_photo(id,x[0],f'{x[1]}\nЖанр: {x[2]}\nОписание: {x[3]}\nДата создания: {x[4]}\nРейтинг: {x[-1]}')
+    for x in cur.execute('SELECT * FROM film WHERE id == ?',(film_id,)).fetchall():
+        await bot.send_photo(id,x[1],f'{x[2]}\nЖанр: {x[3]}\nОписание: {x[4]}\nДата создания: {x[5]}\nРейтинг: {x[-1]}')
 
 #async def sql_show_variant(callback_query):
     #for x in cur.execute('SELECT * FROM film WHERE name == ?',('first movie',)).fetchall():
@@ -27,7 +27,7 @@ async def sql_show_variant(id, film_id):
 async def sql_get():
     films = cur.execute('SELECT id, name FROM film').fetchall()
     message, indices = zip(*films)
-    message = '\n'.join(f"{i + 1}. {value[1]}" for i, value in enumerate(message))
+    message = '\n'.join(f"{i + 1}. {value}" for i, value in enumerate(message))
     return { 'message': message, 'indices': indices }
 
 async def sql_read(message):
