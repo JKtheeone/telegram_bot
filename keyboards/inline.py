@@ -1,4 +1,5 @@
 from aiogram.types import InlineKeyboardButton,InlineKeyboardMarkup
+
 b1 = InlineKeyboardButton(text='1️⃣',callback_data='btn1')
 b2 = InlineKeyboardButton(text='2️⃣',callback_data='btn2')
 b3 = InlineKeyboardButton(text='3️⃣',callback_data='btn3')
@@ -12,3 +13,12 @@ b10 = InlineKeyboardButton(text='🔟',callback_data='btn10')
 
 
 inkb = InlineKeyboardMarkup(row_width=2).add(b1,b2,b3,b4,b5,b6,b7,b8,b9,b10)
+
+
+bg1 = InlineKeyboardButton(text='anime',callback_data='gbtn1')
+bg2 = InlineKeyboardButton(text='Драма',callback_data='gbtn2')
+bg3 = InlineKeyboardButton(text='Комедия',callback_data='gbtn3')
+bg4 = InlineKeyboardButton(text='Фэнтези',callback_data='gbtn4')
+
+inkbg = InlineKeyboardMarkup(row_width=2).add(bg1,bg2,bg3,bg4)
+
