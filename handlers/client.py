@@ -2,7 +2,7 @@ from ast import Lambda
 from aiogram import Dispatcher, types
 from create_bot import dp,bot
 from keyboards import kb_client
-from aiogram.types import ReplyKeyboardRemove
+from aiogram.types import ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeyboardButton
 from data_base import sqlite_db
 from keyboards import inline
 from aiogram.dispatcher.filters import Text
@@ -58,12 +58,32 @@ async def process_callback_kbbtng(callback_query : types.CallbackQuery):
         #await message.answer('Такой команды не существует')
         #await message.delete()
 
+async def command_test1(message : types.Message):
+    data = await sqlite_db.sql_get()
+    inline_kb = InlineKeyboardMarkup(row_width=2)
+    for i, film_index in enumerate(data['indices']):
+        b = InlineKeyboardButton(text=f'{i + 1}',callback_data=f'btn{film_index}')
+        inline_kb.add(b)
+    
+    await message.answer(data['message'], reply_markup=inline_kb)
+
+#@dp.callback_query_handler(func=lambda c: c.data and c.data.startswith('btntest1'))         
+async def process_callback_kbbtn(callback_query: types.CallbackQuery):
+    code = callback_query.data.strip('btntest1')
+    if code.isdigit():
+        code = int(code)
+        await sqlite_db.sql_show_variant(callback_query.from_user.id, code)
+    else:
+        # можно добавить листание страниц
+        pass
+
 def register_handlers_client(dp : Dispatcher):
     dp.register_message_handler(command_start,commands=['start','help'])
     #dp.register_message_handler(command_top,commands=['My_TOP'])
     dp.register_message_handler(command_top,Text(equals = ['top','🔟','top🔟'],ignore_case = True))
     dp.register_message_handler(command_genres,commands=['Genres'])
     dp.register_message_handler(command_all,commands=['All'])
+    dp.register_message_handler(command_test1,commands=['test1'])
     dp.register_callback_query_handler(process_callback_kbbtn,lambda c: c.data and c.data.startswith('btn'))
     dp.register_callback_query_handler(process_callback_kbbtng,lambda c: c.data and c.data.startswith('gbtn'))
     #dp.register_message_handler(empty)

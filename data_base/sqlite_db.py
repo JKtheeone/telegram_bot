@@ -56,7 +56,11 @@ def sql_all():
         result += f'{x[2]} {x[-1]}/10\n'
     return result
 
-
+async def sql_get():
+    films = cur.execute('SELECT id, name FROM film').fetchall()
+    message, indices = zip(*films)
+    message = '\n'.join(f"{i + 1}. {value}" for i, value in enumerate(message))
+    return { 'message': message, 'indices': indices }
 
 #async def sql_read(message):
     #x = cur.execute('SELECT name FROM film').fetchall()
