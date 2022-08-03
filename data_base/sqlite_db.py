@@ -108,7 +108,7 @@ async def sql_genre_filter(chatid : types.Message,code,page = 1):
     list = cur.execute('SELECT * FROM film WHERE genre LIKE ?',(genres.get(code))).fetchall()
     if(len(list) > 10):
         count_pages = math.ceil(len(list)/10)
-        paginator = InlineKeyboardPaginator(page_count = count_pages,current_page=page,data_pattern=f'forgenre#{page}')
+        paginator = InlineKeyboardPaginator(page_count = count_pages,current_page=page,data_pattern=f'forgenre#{"{page}"}:{code}')
         for i in list[(page-1)*10:len(list)-(len(list)-((page)*10))]:
             paginator.add_before(InlineKeyboardButton(text=f'{list.index(i)+1}.{i[2]} {i[-1]}/10',callback_data=f'/f{i[0]}'))
         await bot.send_message(chat_id=chatid.chat.id,text=f'{genres.get(code)[0].replace("%","")}:\n',reply_markup=paginator.markup,parse_mode='Markdown')
