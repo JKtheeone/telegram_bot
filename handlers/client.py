@@ -23,7 +23,7 @@ async def command_genres(message : types.Message):
 async def command_all(message : types.Message):
         #await bot.send_message(message.from_user.id,text=sqlite_db.sql_all(),reply_markup=inline.in1)
         #await sqlite_db.send_film_page(message)
-        await sqlite_db.pages(message)
+        await sqlite_db.sql_filter(message,code = 0,page = 1,sql_query= 'all')
 #@dp.message_handler(commands=['My_TOP'])
 async def command_top(message : types.Message):
         #await sqlite_db.sql_read(message)  
@@ -34,10 +34,10 @@ async def command_inrate_order(message : types.Message):
         #await sqlite_db.send_inrate_order(message)
 
 async def process_callback_rate(callback_query : types.CallbackQuery):
-        rate = callback_query.data.split('#')[1]
-        if rate.isdigit():
-                rate = int(rate)
-                await sqlite_db.send_inrate_order(callback_query,rate)
+        code = callback_query.data.split('#')[1]
+        if code.isdigit():
+                code = int(code)
+        await sqlite_db.sql_filter(callback_query.message, code, 1, 'rate')
         await bot.answer_callback_query(callback_query.id)
 
 #@dp.callback_query_handler(func=lambda c: c.data and c.data.startswith('btn'))         
