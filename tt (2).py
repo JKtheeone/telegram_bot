@@ -1,4 +1,4 @@
-# from aiogram.utils.callback_data import CallbackData
+from aiogram.utils.callback_data import CallbackData
 film_cb = CallbackData('film_callback', 'action', 'cur_page')
 page_cb = CallbackData('page_callback', 'next_page')
 

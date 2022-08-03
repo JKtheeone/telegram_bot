@@ -103,7 +103,6 @@ def sql_delete_command(data):
 
 
 async def sql_genre_filter(chatid : types.Message,code,page = 1):
-    #result = ''
     inlinekeyboard = InlineKeyboardMarkup(row_width=1)
     list = cur.execute('SELECT * FROM film WHERE genre LIKE ?',(genres.get(code))).fetchall()
     if(len(list) > 10):
