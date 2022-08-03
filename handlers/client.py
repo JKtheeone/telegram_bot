@@ -21,8 +21,6 @@ async def command_genres(message : types.Message):
         await message.answer(text='*Выберите жанр и нажмите на соответствующую кнопку:*' ,reply_markup=inline.inkbg,parse_mode='Markdown')
 
 async def command_all(message : types.Message):
-        #await bot.send_message(message.from_user.id,text=sqlite_db.sql_all(),reply_markup=inline.in1)
-        #await sqlite_db.send_film_page(message)
         await sqlite_db.pages(message)
 #@dp.message_handler(commands=['My_TOP'])
 async def command_top(message : types.Message):
@@ -34,10 +32,10 @@ async def command_inrate_order(message : types.Message):
         #await sqlite_db.send_inrate_order(message)
 
 async def process_callback_rate(callback_query : types.CallbackQuery):
-        rate = callback_query.data.split('#')[1]
-        if rate.isdigit():
-                rate = int(rate)
-                await sqlite_db.send_inrate_order(callback_query,rate)
+        code = callback_query.data.split('#')[1]
+        if code.isdigit():
+                code = int(code)
+        await sqlite_db.send_inrate_order(callback_query.message,code)
         await bot.answer_callback_query(callback_query.id)
 
 #@dp.callback_query_handler(func=lambda c: c.data and c.data.startswith('btn'))         
@@ -60,9 +58,6 @@ async def process_callback_pagination(callback_query : types.CallbackQuery):
         await bot.delete_message(callback_query.message.chat.id,callback_query.message.message_id)
         await sqlite_db.send_film_page(callback_query.message,film)
         
-# async def show_with_command(message : types.Message):
-#         code = int(message.text.split('f')[1])
-#         await sqlite_db.sql_show_variant(message.from_user.id,code)
 
 async def command_info(message : types.Message):
         await bot.send_message(message.from_user.id,text='_Жалобы,предложения и вопросы писать сюда -_ @jktherealone',parse_mode='Markdown')
@@ -87,6 +82,12 @@ async def proccess_callback_pagesgenre(callback_query : types.CallbackQuery):
         await bot.delete_message(callback_query.message.chat.id,callback_query.message.message_id)
         await sqlite_db.sql_genre_filter(chatid=callback_query.message,code=code,page=page)
 
+async def proccess_callback_pagesrate(callback_query : types.CallbackQuery):
+        data = callback_query.data.split('#')[1].split(':')
+        page,rate = map(int,data)
+        await bot.delete_message(callback_query.message.chat.id,callback_query.message.message_id)
+        await sqlite_db.send_inrate_order(message=callback_query.message,rate=rate,page=page)
+
 def register_handlers_client(dp : Dispatcher):
     dp.register_message_handler(command_start,commands=['start','help'])
     dp.register_message_handler(command_top,Text(equals = ['top','🔟','top🔟'],ignore_case = True))
@@ -102,5 +103,6 @@ def register_handlers_client(dp : Dispatcher):
     dp.register_callback_query_handler(process_callback_rate,lambda c: c.data and c.data.startswith('rate'))
     dp.register_callback_query_handler(proccess_callback_showfilmpage,lambda c: c.data and c.data.startswith('/f'))
     dp.register_callback_query_handler(proccess_callback_pagesgenre,lambda c: c.data and c.data.startswith('forgenre'))
+    dp.register_callback_query_handler(proccess_callback_pagesrate,lambda c: c.data and c.data.startswith('forrate'))
     dp.register_message_handler(command_info,commands=['links'])
     #dp.register_message_handler(empty)

@@ -48,12 +48,6 @@ async def sql_show_top(id,code = top.keys()):
         for x in cur.execute('SELECT * FROM film WHERE name == ?',(top.get(code))).fetchall():
             await bot.send_photo(id,x[1],f'{x[2]}\n*Жанр:* {x[3]}\n*Описание:* {x[4]}\n*Дата создания:* {x[5]}\n*Рейтинг:* {x[-1]}',parse_mode='Markdown')
     else:
-        # result = ''
-        # for key in code:
-        #     list = cur.execute('SELECT name FROM film WHERE name == ?',(top.get(key))).fetchall():
-        #     for x in list:
-        #         result += f"_{key}.{x[0]}\n_"
-        # await bot.send_message(id,text=result,reply_markup=inline.inkb,parse_mode='Markdown')
         inlinekeyboard = InlineKeyboardMarkup(row_width=1)
         for key in code:
             list = cur.execute('SELECT * FROM film WHERE name == ?',(top.get(key))).fetchall()
@@ -67,23 +61,26 @@ async def send_film_page(message : types.Message,film = 1):
         for x in cur.execute('SELECT * FROM film WHERE id == ?',(film,)).fetchall():
             await bot.send_photo(message.chat.id,x[1],f'{x[2]}\n*Жанр:* {x[3]}\n*Описание:* {x[4]}\n*Дата создания:* {x[5]}\n*Рейтинг:* {x[-1]}',reply_markup=paginator.markup,parse_mode='Markdown')
 
-async def send_inrate_order(message:types.CallbackQuery,rate):
-    result = ''
-    lst =  cur.execute('SELECT * FROM film WHERE rate == ? ORDER BY rate DESC',((rate,))).fetchall()
-    for x in lst:
-        result += f'{lst.index(x)+1}.{x[2]} {x[-1]}/10 /f{x[0]}\n'
-    await bot.send_message(message.from_user.id,text =f'Фильмы с оценкой *{rate}*:\n_{result}_',parse_mode='Markdown')
+async def send_inrate_order(message:types.CallbackQuery,rate,page = 1):
+    # result = ''
+    # lst =  cur.execute('SELECT * FROM film WHERE rate == ? ORDER BY rate DESC',((rate,))).fetchall()
+    # for x in lst:
+    #     result += f'{lst.index(x)+1}.{x[2]} {x[-1]}/10 /f{x[0]}\n'
+    # await bot.send_message(message.from_user.id,text =f'Фильмы с оценкой *{rate}*:\n_{result}_',parse_mode='Markdown')
+    inlinekeyboard = InlineKeyboardMarkup(row_width=1)
+    list = cur.execute('SELECT * FROM film WHERE rate ==? ORDER BY rate DESC ',((rate,))).fetchall()
+    if(len(list) > 10):
+        count_pages = math.ceil(len(list)/10)
+        paginator = InlineKeyboardPaginator(page_count = count_pages,current_page=page,data_pattern=f'forrate#{"{page}"}:{rate}')
+        for i in list[(page-1)*10:len(list)-(len(list)-((page)*10))]:
+            paginator.add_before(InlineKeyboardButton(text=f'{list.index(i)+1}.{i[2]} {i[-1]}/10',callback_data=f'/f{i[0]}'))
+        await bot.send_message(chat_id=message.chat.id,text=f'Фильмы с оценкой *{rate}*:\n',reply_markup=paginator.markup,parse_mode='Markdown')
+    else:
+        for i in list:
+            b = InlineKeyboardButton(text=f'{list.index(i)+1}.{i[2]} {i[-1]}/10',callback_data=f'/f{i[0]}')
+            inlinekeyboard.add(b)
+        await bot.send_message(chat_id=message.chat.id,text=f'*Фильмы с оценкой *{rate}*:\n*',reply_markup=inlinekeyboard,parse_mode='Markdown')
 
-
-# async def pages(message : types.Message,page = 1):
-#     count = math.ceil(cur.execute('SELECT COUNT(*) FROM film').fetchall()[0][0]/18)
-#     paginator = InlineKeyboardPaginator(page_count = count,current_page=page,data_pattern='page#{page}')
-#     paginator.add_after(inline.bm)
-#     result = ''
-#     y = math.ceil((cur.execute('SELECT COUNT(*) FROM film').fetchall()[0][0])/count)
-#     for x in cur.execute('SELECT * FROM film WHERE id > ? LIMIT ?',((page * y) - y,y)).fetchall():
-#         result += f'_{x[2]} {x[-1]}/10 /f{x[0]}\n_'
-#     await bot.send_message(message.chat.id,text=result,reply_markup=paginator.markup,parse_mode='Markdown')
 
 async def pages(message : types.Message,page = 1):
     count = math.ceil(cur.execute('SELECT COUNT(*) FROM film').fetchall()[0][0]/10) #количество страниц
@@ -134,11 +131,5 @@ def sql_all():
     return result
 
 
-#async def sql_read(message):
-    #x = cur.execute('SELECT name FROM film').fetchall()
-    #y = '\n'.join(f"{value[0]}" for value in x)
-    #y = '\n'.join("{0}".format(*value) for value in x)
-    #y = '\n'.join(str(value).replace(",()'",'').replace("'","").replace('(','').replace(')','') for value in x)
-    #await bot.send_message(message.from_user.id, y) #f'{ret[1]}\nЖанр: {ret[2]}\nОписание: {ret[3]}\nДата создания: {ret[4]}\nРейтинг: {ret[-1]}')
 
     
