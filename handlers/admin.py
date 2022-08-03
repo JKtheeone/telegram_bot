@@ -92,7 +92,7 @@ async def load_date(message: types.Message, state: FSMContext):
 async def load_rate(message: types.Message, state : FSMContext):
     if message.from_user.id == ID:
         async with state.proxy() as data:
-            data['rate'] = message.text
+            data['rate'] = int(message.text)
         await sqlite_db.sql_add_command(state)
         await state.finish()
 
