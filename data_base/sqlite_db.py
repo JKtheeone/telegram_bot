@@ -12,6 +12,14 @@ genres = dict([(1,('%Аниме%',)),(2,('%Биография%',)),(3,('%Бое�
     (9,('%Исторические%',)),(10,('%Комедия%',)),(11,('%Криминал%',)),(12,('%Мультфильмы%',)),(13,('%Приключения%',)),(14,('%Спортивные%',)),(15,('%Триллер%',)),(16,('%Ужасы%',)),\
         (17,('%Фантастика%',)),(18,('%Фэнтези%',))])
 
+top_n = {i: i for i in range(1, 11)} # оценки 1-10 
+
+query_to_data = {
+    'all' : ('Все фильмы', {}),
+    'genre': ('Фильмы в жанре ', genres),
+    'rate': ('Фильмы с оценкой ', top_n)
+    }
+
 top = dict([(1,('Святые из Гетто(The Boondock Saints)',)),(2,('Тренер Картер(Coach Carter)',)),(3,('Властелин Колец(The Lord of the Rings)',)),(4,("Достучаться до небес(Knockin' on Heaven's Door)",)),(5,('Крестный отец(The Godfather)',)),\
     (6,('Лицо со шрамом(Scarface)',)),(7,('Троя(Troy)',)),(8,('Славные парни(Goodfellas)',)),(9,('Наруто(Naruto)',)),(10,('Движение Вверх',))])
 
@@ -102,21 +110,29 @@ def sql_delete_command(data):
     base.commit()
 
 
-async def sql_genre_filter(chatid : types.Message,code,page = 1):
+async def sql_filter(chatid: types.Message, code=0, page=1, sql_query: str=''):
     #result = ''
+    if sql_query not in query_to_data:
+        print('Ошибка в sql_query')
+        #raise Exception('Ошибка в sql_query')
+        return
+    data = query_to_data[sql_query]
     inlinekeyboard = InlineKeyboardMarkup(row_width=1)
-    list = cur.execute('SELECT * FROM film WHERE genre LIKE ?',(genres.get(code))).fetchall()
+    if sql_query == 'all':
+        list = cur.execute('SELECT * FROM film').fetchall()
+    else:
+        list = cur.execute(f'SELECT * FROM film WHERE {sql_query} LIKE ?', (data[1].get(code))).fetchall() 
     if(len(list) > 10):
         count_pages = math.ceil(len(list)/10)
-        paginator = InlineKeyboardPaginator(page_count = count_pages,current_page=page,data_pattern=f'forgenre#{page}')
+        paginator = InlineKeyboardPaginator(page_count = count_pages,current_page=page,data_pattern=f'forfilter#{"{page}"}:{code}:{sql_query}')
         for i in list[(page-1)*10:len(list)-(len(list)-((page)*10))]:
             paginator.add_before(InlineKeyboardButton(text=f'{list.index(i)+1}.{i[2]} {i[-1]}/10',callback_data=f'/f{i[0]}'))
-        await bot.send_message(chat_id=chatid.chat.id,text=f'{genres.get(code)[0].replace("%","")}:\n',reply_markup=paginator.markup,parse_mode='Markdown')
+        await bot.send_message(chat_id=chatid.chat.id,text=f'{data[0]}{data[1].get(code, "")[0].replace("%","")}:\n',reply_markup=paginator.markup,parse_mode='Markdown')
     else:
         for i in list:
             b = InlineKeyboardButton(text=f'{list.index(i)+1}.{i[2]} {i[-1]}/10',callback_data=f'/f{i[0]}')
             inlinekeyboard.add(b)
-        await bot.send_message(chat_id=chatid.chat.id,text=f'*{genres.get(code)[0].replace("%","")}:\n*',reply_markup=inlinekeyboard,parse_mode='Markdown')
+        await bot.send_message(chat_id=chatid.chat.id,text=f'*{data[0]}{data[1].get(code, "")[0].replace("%","")}:\n*',reply_markup=inlinekeyboard,parse_mode='Markdown')
 
 
 

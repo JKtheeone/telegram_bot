@@ -52,7 +52,7 @@ async def process_callback_kbbtng(callback_query : types.CallbackQuery):
         code = callback_query.data.split('#')[1]
         if code.isdigit():
                 code = int(code)
-        await sqlite_db.sql_genre_filter(callback_query.message,code)
+        await sqlite_db.sql_filter(callback_query.message, code, 1, 'genre')
         await bot.answer_callback_query(callback_query.id)
 
 async def process_callback_pagination(callback_query : types.CallbackQuery):
@@ -81,13 +81,12 @@ async def proccess_callback_showfilmpage(callback_query : types.CallbackQuery):
         await sqlite_db.sql_show_variant(callback_query.from_user.id,film)
         await bot.answer_callback_query(callback_query.id)
 
-async def proccess_callback_pagesgenre(callback_query : types.CallbackQuery):
-        data = callback_query.data
-        page = int(data.split('#')[1].split(':')[0])+1
-        #genre = int(data.split(':')[1])
-        print(page)
+async def proccess_callback_pagesfilter(callback_query : types.CallbackQuery):
+        data = callback_query.data.split('#')[1].split(':')
+        page, code = map(int, data[:2])
+        sql_query = data[2]
         await bot.delete_message(callback_query.message.chat.id,callback_query.message.message_id)
-        await sqlite_db.sql_genre_filter(chatid=callback_query.message,code=genre,page=page)
+        await sqlite_db.sql_filter(chatid=callback_query.message, code=code, page=page, sql_query=sql_query)
 
 def register_handlers_client(dp : Dispatcher):
     dp.register_message_handler(command_start,commands=['start','help'])
@@ -103,6 +102,6 @@ def register_handlers_client(dp : Dispatcher):
     dp.register_callback_query_handler(proccess_callback_pages,lambda c: c.data and c.data.startswith('page'))
     dp.register_callback_query_handler(process_callback_rate,lambda c: c.data and c.data.startswith('rate'))
     dp.register_callback_query_handler(proccess_callback_showfilmpage,lambda c: c.data and c.data.startswith('/f'))
-    dp.register_callback_query_handler(proccess_callback_pagesgenre,lambda c: c.data and c.data.startswith('forgenre'))
+    dp.register_callback_query_handler(proccess_callback_pagesfilter,lambda c: c.data and c.data.startswith('forfilter'))
     dp.register_message_handler(command_info,commands=['links'])
     #dp.register_message_handler(empty)
